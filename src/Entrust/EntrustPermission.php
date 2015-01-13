@@ -32,7 +32,7 @@ class EntrustPermission extends Ardent
     public function __construct(array $attributes = array())
     {
         parent::__construct($attributes);
-        $this->table = Config::get('entrust::permissions_table');
+        $this->table = Config::get('entrust.permissions_table');
     }
 
     /**
@@ -42,7 +42,7 @@ class EntrustPermission extends Ardent
      */
     public function roles()
     {
-        return $this->belongsToMany(Config::get('entrust::role'), Config::get('entrust::permission_role_table'));
+        return $this->belongsToMany(Config::get('entrust.role'), Config::get('entrust.permission_role_table'));
     }
 
     /**
@@ -55,7 +55,7 @@ class EntrustPermission extends Ardent
     public function beforeDelete($forced = false)
     {
         try {
-            DB::table(Config::get('entrust::permission_role_table'))->where('permission_id', $this->id)->delete();
+            DB::table(Config::get('entrust.permission_role_table'))->where('permission_id', $this->id)->delete();
         } catch (Exception $e) {
             // do nothing
         }

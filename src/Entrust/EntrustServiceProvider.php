@@ -18,18 +18,27 @@ class EntrustServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-	// Work-around to deal with the removal of [packages] from Laravel 5
+        // Work-around to deal with the removal of [packages] from Laravel 5
         // $this->package('zizaco/entrust', 'entrust', __DIR__.'/../');
         // Is it possible to register the config?
         if (method_exists($this->app['config'], 'package')) {
             $this->app['config']->package('zizaco/entrust',__DIR__ . '/../');
         } else {
             // Load the config for now..
+            $publishedConfigFile = base_path()."/config/packages/zizaco/entrust/config.php";
+            $publishedConfig = [];
+            if(file_exists($publishedConfigFile)) {
+                $publishedConfig = $this->app['files']->getRequire($publishedConfigFile);
+            }
             $config = $this->app['files']->getRequire(__DIR__ .'/../config/config.php');
-            $this->app['config']->set('entrust::config', $config);
-        }	
+            $this->app['config']->set('entrust', array_merge($config, $publishedConfig));
 
-        $this->commands('command.entrust.migration');
+        }
+
+        $this->commands([
+            'command.entrust.migration',
+            'command.entrust.config'
+        ]);
     }
 
     /**
@@ -66,6 +75,9 @@ class EntrustServiceProvider extends ServiceProvider
         $this->app->bindShared('command.entrust.migration', function ($app) {
             return new MigrationCommand();
         });
+        $this->app->bindShared('command.entrust.config', function ($app) {
+            return new ConfigCommand();
+        });
 	}
 
     /**
@@ -76,7 +88,8 @@ class EntrustServiceProvider extends ServiceProvider
     public function provides()
     {
         return array(
-            'command.entrust.migration'
+            'command.entrust.migration',
+            'command.entrust.config'
         );
     }
 }
